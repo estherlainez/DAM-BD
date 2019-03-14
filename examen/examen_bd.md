@@ -2,7 +2,7 @@
 
 	* Inserta una nueva oficina con sede en Tarazona, Avenida de la Paz, 25, CP 50500, código TRZ-ES. 
 	* Inserta un empleado representante de ventas que pertenezca a la oficina anterior y cuyo nombre coincida con el tuyo.
-	* Inserta los 5 clientes que se adjuntan a continuación en una sola instrucción y cuyo representante de ventas sea el insertado anteriormente.
+	* Inserta 5 clientes en una sola instrucción y cuyo representante de ventas sea el insertado anteriormente. Se adjuntan a continuación datos para la instrucción.
 
 ```sql
 (NombreCliente,NombreContacto,ApellidoContacto,Telefono,Fax,LineaDireccion1,Ciudad,Region,Pais,CodigoPostal,LimiteCredito)
@@ -19,8 +19,9 @@
 ```
 	* Inserta en la tabla clientes_pagos los datos procedentes de una consulta que informe: 
 
-		* nombre del cliente.
-		* importe total pagado hasta la fecha.
+		* Nombre del cliente.
+		* Ciudad de la Oficina asociada al representante de ventas del cliente.
+		* Importe total pagado hasta la fecha.
 
 2. (1.5 Puntos) Crear Usuarios
 
@@ -30,15 +31,16 @@
 	* Crea un usuario llamado *jardinero* que pueda consultar todas las tablas.
 
 3. (2 Puntos) Modificación de datos. Utilizando el usuario *gerente* creado anteriormente:
-	* Aumenta un 20% el límite de crédito de todos los clientes.
-	* Inserta un pedido que tenga 3 líneas de detalle de pedido mediante una transacción.
+	* Aumenta un 20% el límite de crédito de todos los clientes que hayan hecho pagos en el año 2018.
+	* Inserta un pedido que tenga 2 líneas de detalle de pedido mediante una transacción.
 	* Elimina los clientes que no sean de la oficina de Tarazona y que no hayan hecho pedidos.
 
 4. (2 Puntos) Consulta
-	* Obtén el nombre del cliente que tenga el mayor límite de crédito.
+	* Obtén el nombre del cliente que tenga el mayor límite de crédito, el nombre de su representante de ventas y el producto que más cantidad ha comprado.
 
 5. (2 Puntos) Consulta
-	* Obtener la facturación que ha tenido la empresa, indicando la base imponible (suma del coste del producto multiplicado por el número de unidades vendidas), el iva (21% de la base imponible), y el total (base imponible + iva).
+	* Obtener la facturación que ha tenido cada cliente, indicando el nombre del cliente, la base imponible (suma del precio del producto multiplicado por el número de unidades vendidas), el iva (21% de la base imponible), y el total (base imponible + iva).
+	* Crea una vista llamada total_facturado_cliente a partir de esta consulta.
 
 6. (1 Punto) Exportar el contenido de la base de datos.
 
