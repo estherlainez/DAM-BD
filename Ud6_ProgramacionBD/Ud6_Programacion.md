@@ -1,6 +1,6 @@
 # Programación de bases de datos.
 
-##Introducción. Lenguaje de programación.
+## Introducción. Lenguaje de programación.
 
 
 Las bases de datos han servido como repositorios de datos organizados según una serie de relaciones en tablas. Para acceder a los datos se han utilizado interfaces de lenguajes de programación, algunos de los cuales permiten la inclusión de sentencias SQL como parte de la aplicación. Son lo que se denomina lenguajes anfitriones, como C o Java.
