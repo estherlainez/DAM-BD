@@ -41,6 +41,8 @@ Los parámetros indican la entrada y salida de datos que podríamos usar para el
 Vemos un ejemplo para contar los clientes que tiene asignados un representante de ventas:
 
 ```sql
+DELIMITER $$
+
 CREATE PROCEDURE `contar_clientes_comercial` (IN codigo INT,
   OUT nclientes INT)
 BEGIN
@@ -49,7 +51,7 @@ SELECT
 INTO
   nclientes
 FROM
-  from clientes
+  clientes
 WHERE
   codigoEmpleadoRepVentas=codigo;
 END
