@@ -36,6 +36,25 @@ BEGIN
 END
 ```
 
+```sql
+DELIMITER $$
+
+-- Nombre rutina + parámetros (entrada, salida o e/s)
+CREATE PROCEDURE nbProcedure([IN param1, OUT param2, INOUT param3])
+
+-- Declaración e inicialización de variables
+
+DECLARE tipoVariable nombreVariable = valorVariable;
+
+BEGIN
+	--Proceso de datos
+	-- RETURN si hay que devolver algo (función)
+END $$
+
+DELIMITER;
+```
+
+
 Los parámetros indican la entrada y salida de datos que podríamos usar para el procedimiento y la salida de datos que devolvería el procedimiento almacenado.
 
 Vemos un ejemplo para contar los clientes que tiene asignados un representante de ventas:
@@ -65,6 +84,67 @@ Para ejecutar el procedimiento hay que llamarlo, como a cualquier función en ot
 CALL contar_clientes_comercial(5, @numClientesAsignados);
 select  @numClientesAsignados;
 ```
+
+
+```sql
+DELIMITER $$
+CREATE PROCEDURE hoy()
+LANGUAGE SQL 
+NOT DETERMINISTIC ## El algoritmo no siempre da el mismo resultado
+COMMENT 'Un ejemplo de procedure'
+SELECT CURRENT_DATE FROM t $$
+```
+
+Ejemplo de función que recibe un argumento de estado como entrada y devuelve una cadena en función del valor de entrada.
+Es posible llamar a las funciones con su nombre y una lista de parámetros con el tipo de dato adecuado.
+
+```sql
+## Funciona en la BD test
+DELIMITER $$ 
+CREATE FUNCTION status_actual(in_status CHAR(1))
+	RETURNS VARCHAR(20)
+BEGIN
+	DECLARE status VARCHAR(20);
+
+	IF in_status = 'P' THEN 
+		SET status = 'pasado';
+	ELSEIF in_status = 'O' THEN
+		SET status = 'presente';
+	ELSEIF in_status = 'N' THEN
+		SET status = 'futuro';
+	END IF;
+	RETURN(status);
+	END $$
+```
+
+Ejemplos de llamadas a las funciones.
+
+```sql
+SET @cad = status_actual('P');
+
+select status_actual('O');
+```
+
+Aún así, lo más frecuente es llamar a las funciones desde otras funciones o procedimientos tal como se ha hecho en las consultas cuando se han utilizado funciones de resumen, concatenación, etc. Así las cosas, es fácil comprender que el uso de funciones puede reducir la complejidad del código dividiéndolo en módulos y haciendo más sencillo el mantenimiento.
+
+### Variables y parámetros
+
+De forma similar a otros lenguajes, se utilizan variables y parámetros en el código.
+
+* ```DECLARE``` crea una _variable_ con su nombre y [tipo de dato](http://www.mysqltutorial.org/mysql-data-types.aspx). Además, se puede incluir un valor por defecto en las variables, que será *NULL* si no se indica.
+
+	* ```DECLARE x,y INT DEFAULT 3;```
+* ```SET``` para asignar valores a las variables mediante el operador de asignación ```=```.
+* ```ÌN``` es el modo de parámetro por defecto, indica que el parámetro es de entrada y no se mantienen las modificaciones que sufra fuera de la función o procedimiento.
+*  ```ÒUT``` indica que el parámetro es de salida. Así, el procedimiento podrá asignar valores a este parámetro y será devuelto.
+* INOUT: Para pasar valores que serán modificados y devueltos.
+
+El alcance de las variables está determinado por el bloque en el que se encuentran. Por tanto, no se puede ver una variable que se encuentra fuera de un procedimiento salvo que se le asigne a un parámetro de salida (OUT) o a una variable de sesión (precedida de @). 
+
+
+
+
+
 
 
 ## PL/SQL
