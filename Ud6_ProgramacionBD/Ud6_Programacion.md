@@ -37,6 +37,7 @@ END
 ```
 
 ```sql
+-- Lo habitual para separar una instrucción de otra, es finalizarlas con un “;” pero un Stored Procedure, al igual que un Trigger, estan formados por varias instrucciones, por lo tanto, antes de comenzar su definición, se debe especificar qué caracter delimita (o separa) un Stored Procedure o un Trigger del siguiente Stored Procedure o Trigger.
 DELIMITER $$
 
 -- Nombre rutina + parámetros (entrada, salida o e/s)
@@ -54,8 +55,8 @@ END $$
 DELIMITER;
 ```
 
-
 Los parámetros indican la entrada y salida de datos que podríamos usar para el procedimiento y la salida de datos que devolvería el procedimiento almacenado.
+
 
 Vemos un ejemplo para contar los clientes que tiene asignados un representante de ventas:
 
@@ -85,12 +86,11 @@ CALL contar_clientes_comercial(5, @numClientesAsignados);
 select  @numClientesAsignados;
 ```
 
-
 ```sql
 DELIMITER $$
 CREATE PROCEDURE hoy()
 LANGUAGE SQL 
-NOT DETERMINISTIC ## El algoritmo no siempre da el mismo resultado
+DETERMINISTIC ## El algoritmo siempre da el mismo resultado con una entrada determinada
 COMMENT 'Un ejemplo de procedure'
 SELECT CURRENT_DATE FROM t $$
 ```
@@ -131,16 +131,177 @@ Aún así, lo más frecuente es llamar a las funciones desde otras funciones o p
 
 De forma similar a otros lenguajes, se utilizan variables y parámetros en el código.
 
-* ```DECLARE``` crea una _variable_ con su nombre y [tipo de dato](http://www.mysqltutorial.org/mysql-data-types.aspx). Además, se puede incluir un valor por defecto en las variables, que será *NULL* si no se indica.
-
+* ```DECLARE``` crea una _variable_ con su nombre y [tipo de dato](https://www.anerbarrena.com/tipos-dato-mysql-5024/). Además, se puede incluir un valor por defecto en las variables, que será *NULL* si no se indica.
 	* ```DECLARE x,y INT DEFAULT 3;```
 * ```SET``` para asignar valores a las variables mediante el operador de asignación ```=```.
-* ```ÌN``` es el modo de parámetro por defecto, indica que el parámetro es de entrada y no se mantienen las modificaciones que sufra fuera de la función o procedimiento.
-*  ```ÒUT``` indica que el parámetro es de salida. Así, el procedimiento podrá asignar valores a este parámetro y será devuelto.
-* INOUT: Para pasar valores que serán modificados y devueltos.
+* ```ÌN``` es el modo de parámetro por defecto, el procedimiento puede modificar el valor, pero la modificación no es visible desde fuera cuando el procedimiento finaliza.
+*  ```ÒUT``` Su valor inicial es NULL dentro del procedimiento, y su valor es visible desde fuera cuando la función acaba.
+* ```INOUT``` Para pasar valores que serán modificados y devueltos. Es inicializado cuando se llama a la función, puede ser modificado dentro y cualquier cambio realizado en él es visible cuando el procedimiento finaliza.
+
 
 El alcance de las variables está determinado por el bloque en el que se encuentran. Por tanto, no se puede ver una variable que se encuentra fuera de un procedimiento salvo que se le asigne a un parámetro de salida (OUT) o a una variable de sesión (precedida de @). 
 
+
+### Estructuras de control
+
+#### IF-THEN-ELSE
+Es posible incluir instrucciones condicionales mediante el uso de IF como por ejemplo en la función ```status_actual()``` vista anteriormente
+
+```sql
+IF expression THEN
+   sentencias;
+ELSEIF elseif-expression THEN
+   elseif-sentencias;
+...
+ELSE
+   else-sentencias;
+END IF;
+```
+
+#### CASE
+Cuando se dan varias condiciones, el if-else puede resultar tedioso. Para estas situaciones puede ser más útil emplear la estructura CASE, que se asemeja a un switch de otros lenguajes. Evalúa la expresión y procede según el valor que tome. Si no es ninguno de los expresados en los ```WHEN``` se toma el del ```ELSE```.
+
+```sql
+CASE  case_expression
+   WHEN valor_1 THEN commands
+   WHEN valor_2 THEN commands
+   ...
+   ELSE commands
+END CASE;
+```
+
+### Bucles
+
+De forma similar a otros lenguajes, permiten iterar un conjunto de instrucciones un número determinado de veces, mientras se cumpla una determinada condición.
+
+#### LOOP
+
+```sql
+[etiqueta:] LOOP
+	sentencias
+END LOOP
+[etiqueta]; -- la etiqueta permite designar un nombre para el bucle y referirse a él en el código
+```
+
+```sql
+-- Crea una cadena de números pares mientras que x sea menor que 10
+-- Observar la referencia a la etiqueta dentro del loop
+etiqueta_loop:  LOOP
+	 IF  x > 10 THEN 
+	 	LEAVE  loop_label; #La palabra Leave indica que se ha cumplido la condición de salida del bucle.
+	 END  IF;
+	            
+	 SET  x = x + 1;
+	 IF  (x mod 2) THEN
+	 	ITERATE  etiqueta_loop;
+	 ELSE
+	   SET  str = CONCAT(str,x,',');
+	 END  IF;
+ END LOOP;    
+```
+
+#### REPEAT UNTIL LOOP
+Repite la condición hasta que se cumpla una determinada expresión, es similar al anterior.
+
+```sql
+[etiqueta:] REPEAT
+ sentencias;
+UNTIL expresion
+END REPEAT
+```
+
+```sql
+-- Construye una cadena con los números menores que 6
+REPEAT
+	 SET  str = CONCAT(str,x,',');
+	 SET  x = x + 1; 
+	        UNTIL x  > 5
+END REPEAT;
+```
+
+
+#### WHILE DO
+Igual que el anterior pero usando la palabra WHILE
+
+```SQL
+[etiqueta:] WHILE expresion DO
+	instrucciones
+END WHILE [etiqueta]
+```
+
+
+### Cursores
+
+Lo habitual en la programación de bases de datos es manejar datos con origen o destino en dicha base de datos mediante sentencias SQL.
+
+En el lenguaje SQL existen unos tipos de controles que son útiles para recorrer los registros que devuelve una consulta. Este tipo de estructuras sólo deben utilizarse cuando no haya otra forma de manipular conjuntos de datos en una sola instrucción.
+
+
+Ejemplo de CURSOR
+
+```sql
+-- DECLARE nombre_cursor CURSOR FOR sentencia_select;
+
+DECLARE cursor1 CURSOR FOR
+SELECT nombreCliente, ciudad, telefono from clientes;
+
+
+-- Si se usa en un procedimiento, hay que declararlo después de todas las variables que se usen.
+```
+
+Otro ejemplo de cursor que va modificando una tabla según las condiciones en cada fila
+
+```sql
+DELIMITER $$
+DROP PROCEDURE IF EXISTS `micursor`$$
+CREATE PROCEDURE `micursor`()
+BEGIN
+DECLARE finalizado BOOLEAN DEFAULT FALSE;
+DECLARE identificador integer;
+DECLARE cita integer;
+
+DECLARE c1 cursor for SELECT id,timestamp from tabla_empleados ORDER BY id ASC;
+
+-- Esta línea sirve para controlar lo que sucede al llegar a la última fila del cursor, 'sqlstate = 02000'
+DECLARE CONTINUE HANDLER FOR SQLSTATE '02000' SET finalizado = TRUE;
+-- También se suele poner HANDLER FOR NOT FOUND cuando se llega al final de los resultados.
+
+open c1; -- OPEN INICIALIZA el conjunto de resultados asociados al cursor
+	c1_loop: LOOP
+	fetch c1 into identificador,cita; -- FETCH recupera la siguiente fila de valores del conjunto de resultados
+	        IF `finalizado` THEN LEAVE c1_loop; END IF; 
+	        UPDATE calendar SET timestamp = cita  WHERE id=identificador;
+	END LOOP c1_loop;
+CLOSE c1; -- CLOSE cierra el cursor, libera la memoria que está ocupando y desbloquea el acceso a los datos.
+
+END $$
+```
+
+Este cursor se podría realizar con una única instrucción UPDATE, pero sirve para ver cómo se declara en la sintaxis de MySQL.
+
+Básicamente se declaran dos variables identificador y cita que contendrán el valor de cada campo de la fila. Luego se define el cursor mediante una consulta SQL (es como si se creara una tabla temporal). Finalmente, se recorre el cursor y se aplica la operación adecuada según nuestro programa.
+
+Para ejecutar el cursor se puede hacer mediante ```call nb_cursor()```
+
+En el ejemplo anterior se ha implementado el cursor con un bucle ```LOOP``` pero puede hacerse con cualquiera de los vistos, de hecho lo más habitual es utilizar ```WHILE``` porque se evalúa la condición antes de ejecutar las sentencias (leer un registro del cursor).
+
+
+### Gestión de errores
+
+Cuando se da un error en un procedimiento almacenado, por defecto se detiene la ejecución del mismo y se devuelve un error. Sin embargo, puede ocurrir que se desee modificar este comportamiento y manejar el error de otra forma, como informar del error en el log y continuar la ejecución del programa. Para estos casos, hay una serie de manejadores de errores parecidos a la gestión de excepciones de Java.
+
+[Ejemplo de gestión de errores](https://www.nosolocodigo.com/crear-handlers-para-manejar-errores-en-mysql-5)
+
+Dentro del procedimiento es posible crear un manejador de errores para el tipo de error deseado para que cuando se produzca el error introduzca en una tabla que se indique un log de errores y no falle la aplicación. La palabra exit significa que cuando se acabe la ejecución del handler se sale del procedimiento almacenado, si se pone ```continue``` en lugar de ```exit```, la ejecución de procedimiento almacenado continúa.
+
+
+```sql
+DECLARE {CONTINUE | EXIT} HANDLER FOR
+{SQLSTATE codigo | MySQL  codigo_error| condicion }
+acciones_manejador -- Escribir en un log, etc.
+```
+
+Los errores pueden ser códigos definidos por el servidor (SQLSTATE), o creados por el usuario, mientras que la acciones del manejador son aquellas sentencias que se pueden ejecutar en caso de producirse un error.
 
 
 
