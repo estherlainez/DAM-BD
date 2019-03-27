@@ -45,7 +45,7 @@ CREATE PROCEDURE nbProcedure([IN param1, OUT param2, INOUT param3])
 
 -- Declaración e inicialización de variables
 
-DECLARE tipoVariable nombreVariable = valorVariable;
+DECLARE nombreVariable tipoVariable;
 
 BEGIN
 	--Proceso de datos
