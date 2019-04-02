@@ -139,7 +139,7 @@ De forma similar a otros lenguajes, se utilizan variables y parámetros en el c�
 * ```INOUT``` Para pasar valores que serán modificados y devueltos. Es inicializado cuando se llama a la función, puede ser modificado dentro y cualquier cambio realizado en él es visible cuando el procedimiento finaliza.
 
 
-El alcance de las variables está determinado por el bloque en el que se encuentran. Por tanto, no se puede ver una variable que se encuentra fuera de un procedimiento salvo que se le asigne a un parámetro de salida (OUT) o a una variable de sesión (precedida de @). 
+El alcance de las variables está determinado por el bloque BEGIN-END en el que se encuentran. Por tanto, no se puede ver una variable que se encuentra fuera de un procedimiento salvo que se le asigne a un parámetro de salida (OUT) o a una variable de sesión (precedida de @). 
 
 
 ### Estructuras de control
@@ -304,8 +304,84 @@ acciones_manejador -- Escribir en un log, etc.
 Los errores pueden ser códigos definidos por el servidor (SQLSTATE), o creados por el usuario, mientras que la acciones del manejador son aquellas sentencias que se pueden ejecutar en caso de producirse un error.
 
 
+### Triggers o disparadores
+
+Son un tipo especial de rutina almacenada que se ejecuta cuando ocurre algún evento (operaciones DML que modifican; INSERT, UPDATE, DELETE) que modifica alguna determinada tabla.
 
 
+```SQL
+
+CREATE TABLE account (acct_num INT, amount DECIMAL(10,2));
+
+CREATE TRIGGER ins_sum BEFORE INSERT ON account
+   FOR EACH ROW SET @sum = @sum + NEW.amount;
+
+```
+
+En el ejemplo anterior, si se hacen inserciones en la tabla *account* se ejecuta el trigger y se guarda en la variable *@sum* la cantidad insertada.
+
+#### Creación de triggers
+
+```sql
+CREATE TRIGGER nombre_disp momento_disp evento_disp
+    ON nombre_tabla FOR EACH ROW sentencia_disp
+```
+
+El trigger queda asociado a la tabla *nombre_tabla*, la cual no puede ser una tabla TEMPORARY ni una vista.
+
+*momento_disp* es el momento en que el trigger entra en acción. Puede ser BEFORE (antes) o AFTER (despues), para indicar que el trigger se ejecute antes o después que la sentencia que lo activa.
+
+*evento_disp* indica la clase de sentencia que activa al disparador. Puede ser INSERT, UPDATE, o DELETE. Por ejemplo, un trigger BEFORE para sentencias INSERT podría utilizarse para validar los valores a insertar.
+
+No puede haber dos disparadores en una misma tabla que correspondan al mismo momento y sentencia. Por ejemplo, no se pueden tener dos disparadores BEFORE UPDATE. Pero sí es posible tener los disparadores BEFORE UPDATE y BEFORE INSERT o BEFORE UPDATE y AFTER UPDATE.
+
+*sentencia_disp* es la sentencia que se ejecuta cuando se activa el disparador.
+
+
+#### Eliminación de triggers
+
+```sql
+DROP TRIGGER [nombre_schema.]nombre_disp
+```
+
+#### Consulta de triggers
+
+Para consultar los triggers presentes en una base de datos filtrando por nombre o un patrón es posible mediante la sentencia:
+
+```sql
+SHOW TRIGGERS [{FROM | IN} nombre_db]
+	[LIKE `patron` | WHERE expr]
+```
+
+
+#### Uso de triggers
+
+Hay diversos fines que puede darse al uso de triggers. Dependerá de la aplicación de la base de datos y de forma general se pueden enumerar categorías de usos:
+
+* Control de sesiones
+* Control de valores de entrada
+* Mantenimiento de campos derivados de otros
+* Estadísticas
+* Registro y auditoría
+
+
+
+### Gestión de rutinas almacenadas
+
+Como ya se ha visto, mediante el DDL se pueden crear rutinas. Además, se definen instrucciones para eliminar y consultar rutinas.
+
+#### Eliminación
+
+```sql
+DROP {PROCEDURE | FUNCTION} [IF EXISTS] `nombre`;
+```
+
+#### Consulta
+```sql
+SHOW CREATE {PROCEDURE | FUNCTION} `nombre`;
+
+SHOW {PROCEDURE | FUNCTION} STATUS LIKE `nombre`;
+```
 
 
 ## PL/SQL
@@ -339,13 +415,13 @@ Tipos de datos
 Cada constante y variable tiene un tipo de dato en el que se especifica el formato de almacenamiento, restricciones y rango de valores válidos. PL/SQL proporciona una variedad predefinida de tipos de datos. Casi todos los tipos de datos manejados por PL/SQL son similares a los soportados por SQL. A continuación se muestran los tipos de datos más comunes:
 NUMBER (numérico): Almacena números enteros o de punto flotante, virtualmente de cualquier longitud, aunque puede ser especificada la precisión (número de dígitos) y la escala, que es la que determina el número de decimales.
 
-CHAR (carácter): Almacena datos de tipo carácter con un tamaño máximo de 32.767 bytes y cuyo valor de longitud por defecto es 1.
+* CHAR (carácter): Almacena datos de tipo carácter con un tamaño máximo de 32.767 bytes y cuyo valor de longitud por defecto es 1.
 
-VARCHAR2 (carácter de longitud variable): Almacena datos de tipo carácter empleando sólo la cantidad necesaria aún cuando la longitud máxima sea mayor.
+* VARCHAR2 (carácter de longitud variable): Almacena datos de tipo carácter empleando sólo la cantidad necesaria aún cuando la longitud máxima sea mayor.
 
-BOOLEAN (lógico): Se emplea para almacenar valores TRUE o FALSE.
+* BOOLEAN (lógico): Se emplea para almacenar valores TRUE o FALSE.
 
-DATE (fecha): Almacena datos de tipo fecha. Las fechas se almacenan internamente como datos numéricos, por lo que es posible realizar operaciones aritméticas con ellas.
+* DATE (fecha): Almacena datos de tipo fecha. Las fechas se almacenan internamente como datos numéricos, por lo que es posible realizar operaciones aritméticas con ellas.
 
 Atributos de tipo. Un atributo de tipo PL/SQL es un modificador que puede ser usado para obtener información de un objeto de la base de datos. El atributo %TYPE permite conocer el tipo de una variable, constante o campo de la base de datos. El atributo %ROWTYPE permite obtener los tipos de todos los campos de una tabla de la base de datos, de una vista o de un cursor.
 
