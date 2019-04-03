@@ -320,6 +320,8 @@ CREATE TRIGGER ins_sum BEFORE INSERT ON account
 
 En el ejemplo anterior, si se hacen inserciones en la tabla *account* se ejecuta el trigger y se guarda en la variable *@sum* la cantidad insertada.
 
+* [Recurso Triggers](https://guiadev.com/disparadores-en-mysql/)
+
 #### Creación de triggers
 
 ```sql
@@ -363,6 +365,7 @@ Hay diversos fines que puede darse al uso de triggers. Dependerá de la aplicaci
 * Mantenimiento de campos derivados de otros
 * Estadísticas
 * Registro y auditoría
+
 
 
 
