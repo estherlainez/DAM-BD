@@ -1,11 +1,10 @@
 DELIMITER $$
-
-USE db_test;
-
 $$
 
 # Creamos el Schema si no existe
 CREATE SCHEMA IF NOT EXISTS db_test;
+
+USE db_test;
 
 $$
 
