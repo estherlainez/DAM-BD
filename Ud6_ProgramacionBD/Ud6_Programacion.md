@@ -559,7 +559,14 @@ END LOOP;
 
 ### Herramientas para creación de guiones; procedimientos de ejecución.
 
-Para ejecutar funciones o procedimientos definidos basta con escribir su nombre seguido de los argumentos entre paréntesis, o los paréntesis vacíos si no los tiene.
+Para ejecutar funciones o procedimientos definidos basta con escribir su nombre seguido de los argumentos (parámetros actuales) entre paréntesis, o los paréntesis vacíos si no los tiene. 
+
+Si se desea ejecutar desde _sqlplus_ es posible hacerlo mediante los comandos *CALL* o *EXEC*
+
+```SQL
+CALL nb_proc();
+EXEC nb_proc(arg1, arg2);
+```
 
 ### Eventos y disparadores.
 
