@@ -414,7 +414,7 @@ Una línea en PL/SQL contiene grupos de caracteres, conocidos como UNIDADES LÉX
 
 ### Variables del sistema y variables de usuario.
 
-Tipos de datos
+[Tipos de datos](https://elbauldelcodigo.com/tipos-de-datos-en-plsql/41/0)
 Cada constante y variable tiene un tipo de dato en el que se especifica el formato de almacenamiento, restricciones y rango de valores válidos. PL/SQL proporciona una variedad predefinida de tipos de datos. Casi todos los tipos de datos manejados por PL/SQL son similares a los soportados por SQL. A continuación se muestran los tipos de datos más comunes:
 
 * NUMBER (numérico): Almacena números enteros o de punto flotante, virtualmente de cualquier longitud, aunque puede ser especificada la precisión (número de dígitos) y la escala, que es la que determina el número de decimales.
@@ -427,11 +427,11 @@ Cada constante y variable tiene un tipo de dato en el que se especifica el forma
 
 * DATE (fecha): Almacena datos de tipo fecha. Las fechas se almacenan internamente como datos numéricos, por lo que es posible realizar operaciones aritméticas con ellas.
 
-Atributos de tipo. Un atributo de tipo PL/SQL es un modificador que puede ser usado para obtener información de un objeto de la base de datos. El atributo %TYPE permite conocer el tipo de una variable, constante o campo de la base de datos. El atributo %ROWTYPE permite obtener los tipos de todos los campos de una tabla de la base de datos, de una vista o de un cursor.
+Atributos de tipo. Un atributo de tipo PL/SQL es un modificador que puede ser usado para obtener información de un objeto de la base de datos. El atributo %TYPE permite conocer el tipo de una variable, constante o campo de la base de datos. El atributo %ROWTYPE permite obtener los tipos de todos los campos de una tabla de la base de datos, de una vista o de un cursor. Ejemplos a continuación.
 
 #### Declaración de variables
 
-A la hora de introducir variables, antes de utilizarlas hay que declararlas en el apartado ```DECLARE``` del bloque de código. Declarar la variable supone reservarle un espacio en memoria en el que poder guardar su valor.
+A la hora de introducir variables, antes de utilizarlas hay que declararlas en el apartado ```DECLARE``` del bloque de código. [Declarar la variable](https://elbauldelprogramador.com/plsql-declaracion-de-variables/) supone reservarle un espacio en memoria en el que poder guardar su valor.
 
 ```sql
 NombreIdentificador [CONSTANT] tipo_dato [NOT NULL] [:= | DEFAULT | Expresion];
@@ -469,12 +469,13 @@ DECLARE
 ### Procedimientos y Funciones.
 
 [Procedimientos y Funciones PL/SQL ES](https://elbauldelprogramador.com/plsql-procedimientos-y-funciones/)
+[Procedimientos almacenados PL/SQL ES](https://elbauldelcodigo.com/procedimientos-almacenados-en-plsql/60/0)
 
 #### Parámetros formales y actuales
 
 Todos los procedimientos y funciones pueden utilizar parámetros para pasar y recibir información. Dentro de los parámetros podemos distinguir dos tipos: 
-* Parámetros _actuales_: son variables indicadas en la llamada a un subprograma.
-* Parámetros _formales_: son variables declaradas en la especificación del subprograma.
+* Parámetros _actuales_: son variables indicadas en la llamada a un procedimiento o función.
+* Parámetros _formales_: son variables declaradas en la especificación del procedimiento o función.
 
 Además es posible hacer el paso de parámetros de un tipo a otro. Generalmente si los tipos son compatibles PL/SQL lo hace automáticamente. En cualquier caso, es posible hacerlo de forma manual utilizando las siguientes notaciones: 
 
