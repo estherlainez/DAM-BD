@@ -223,7 +223,7 @@ De forma similar a lo visto en las consultas, es posible efectuar inserciones en
 
 #### Modificaciones _UPDATE_
 
-Las modificaciones de los datos ya presentes en las tablas también pueden mejorarse mediante el uso de las herramientas de la programación. Por ejemplo, podría hacerse un procedimiento que aumentara el salario de los empleados del departamento pasado como parámetro. 
+Las modificaciones de los datos ya presentes en las tablas también pueden mejorarse mediante el uso de las herramientas de la programación. Por ejemplo, podría hacerse un procedimiento que aumentara el salario de los empleados del departamento pasado como parámetro. Nótese que mediante _%TYPE_ se establece que el tipo de la variable de entrada dpto debe coincidir con el que tenga asignado el código de Departamento de la tabla de Departamentos (y por tanto con el de la tabla de empleados).
 
 ```sql
 CREATE OR REPLACE PROCEDURE SUBIRSALARIODPTO(aumento IN INT, dpto IN DEPARTAMENTOS.codigoDpto%TYPE)
