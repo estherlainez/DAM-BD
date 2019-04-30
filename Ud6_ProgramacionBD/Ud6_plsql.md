@@ -191,8 +191,9 @@ La principal utilidad del lenguaje de programación es poder trabajar con la inf
 Una diferencia entre hacer las consultas en SQL puro y mediante PLSQL es la posibilidad de hacer uso de variables y que las consultas deben recuperar UNA SOLA FILA (Si devuelve más, se produce un error). Además, debe coincidir el número y tipo de las variables con las columnas que devuelve la consulta. Aquí es donde cobra relevancia el uso de _%ROWTYPE_.
 
 ```sql
-DECLARE numPedidos NUMBER;
-DECLARE numCliente NUMBER;
+DECLARE 
+   numPedidos NUMBER;
+   numCliente NUMBER;
 BEGIN
     numCliente := 3;
     SELECT count(*) INTO numPedidos
