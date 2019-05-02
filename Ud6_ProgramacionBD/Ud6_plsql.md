@@ -56,8 +56,8 @@ notaMinimaAprobado CONSTANT NUMBER := 5;
 
 Existen dos atributos de tipo: %TYPE y %ROWTYPE.
 
-* %TYPE se usa para declarar una variable que tendrá el mismo tipo que una columna de una tabla.
-* %ROWTYPE se usa para declarar un registro con los mismos tipos de la tabla, vista o cursor de la base de datos.
+* __%TYPE__ se usa para declarar una variable que tendrá el mismo tipo que una columna de una tabla.
+* __%ROWTYPE__ se usa para declarar un registro con los mismos tipos de la tabla, vista o cursor de la base de datos.
 
 ```sql
 DECLARE
@@ -80,8 +80,8 @@ DECLARE
 
 ### Procedimientos y Funciones.
 
-[Procedimientos y Funciones PL/SQL ES](https://elbauldelprogramador.com/plsql-procedimientos-y-funciones/)
-[Procedimientos almacenados PL/SQL ES](https://elbauldelcodigo.com/procedimientos-almacenados-en-plsql/60/0)
+* [Procedimientos y Funciones PL/SQL ES](https://elbauldelprogramador.com/plsql-procedimientos-y-funciones/)
+* [Procedimientos almacenados PL/SQL ES](https://elbauldelcodigo.com/procedimientos-almacenados-en-plsql/60/0)
 
 #### Parámetros formales y actuales
 
@@ -243,6 +243,156 @@ END;
 ### Excepciones. Tratamiento de excepciones.
 
 ### Cursores. Funciones de tratamiento de cursores.
+
+
+#### Cursores implícitos.
+
+Conviene saber que en los bloques de código PL/SQL es bastante práctico el uso de cursores. 
+El resultado de una consulta no se muestra directamente en el terminal del usuario, sino que se guarda en un *área de memoria* a la que se accede mediante cursores.
+
+Para realizar una consulta en PL/SQL tenemos que guardar el resultado en cursores. Esto es muy sencillo y basta con meter un INTO en las consultas. Un ejemplo seria este:
+
+```sql
+select columna INTO variable 
+from tabla 
+[where ...]
+
+select count(*) INTO numPedidos 
+from pedidos;
+```
+La variable a continuación de la palabra INTO recoge el valor de la columna. Es importante que el tipo de dato de la variable coincida con el tipo de dato de la columna.
+
+#### Cursores explícitos
+
+Si la consulta que se quiere almacenar en la variable devuelve más de una fila, se hace necesaria la utilización de cursores explícitos. 
+
+Tenemos 4 operaciones básicas para trabajar con un cursor explícito. 
+
+* Declaración del cursor: lo tenemos que declarar en la zona de declaraciones, con el siguiente formato: 
+  ```sql 
+  CURSOR nombrecursor IS sentencia SELECT ...;
+  ```
+* Apertura del cursor: Deberá colocarse en la zona de instrucciones, con el siguiente formato: 
+
+  ```sql
+   OPEN nombrecursor;
+   ```
+Una vez abierto, se ejecuta la consulta expresada en el SELECT y los resultados se almacenan en las estructuras internas de memoria gestionadas por el cursor.
+
+* Recogida de información: Para recuperar la información anteriormente guardada en las estructuras de memoria interna tenemos que usar el siguiente formato: 
+  ```sql
+   FETCH nombrecursor INTO {variable | lista_variables}; -- Aquí toma valor el uso de %ROWTYPE. Si se usa una lista de variables.
+   ```
+Si tenemos una lista de variables, cada una de ellas recibirá la columna correspondiente de la sentencia select, por lo que serán del mismo tipo que las columnas.
+
+*  Cierre del cursor: 
+
+```sql
+   CLOSE nombrecursor;
+```
+
+```sql
+   DECLARE   
+      CURSOR C1 IS SELECT nombre, apellido FROM empleado; -- No se utiliza el INTO al declarar, sino en el bucle posterior.
+      Vnom    VARCHAR2(20);
+      Vape    VARCHAR2(40);
+   BEGIN
+      OPEN C1;
+      LOOP 
+         FETCH C1 INTO Vnom, Vape;
+         EXIT WHEN C1%NOTFOUND; -- Condición de salida del bucle para cuando no quedan más filas.
+         DBMS_OUTPUT.PUT_LINE(Vnom || '' || Vape);
+      END LOOP;
+      CLOSE C1;
+   END;
+```
+
+##### Atributos propios de cursores
+
+* __%FOUND__: Devuelve *true* si el último FETCH ha recuperado algún valor, *false* en caso contrario. Si el cursor no está abierto da error.
+* __%NOTFOUND__: Comportamiento inverso al anterior.
+* __%ROWCOUNT__: Devuelve el número de filas recuperadas hasta el momento.
+* __%ISOPEN__: Devuelve *true* si el cursor está abierto.
+
+
+```sql
+   CREATE OR REPLACE PROCEDURE ver_empleados_por_dpto(dpto_id VARCHAR2)
+   IS
+      dpto VARCHAR2(3); -- Variable de acoplamiento
+      Vnom VARCHAR(15);
+      CURSOR C1 IS SELECT nombre 
+         FROM empleados 
+         WHERE dpto_id=dpto;
+      
+   BEGIN
+      dpto:=dpto_id; -- Antes de abrir se le da valor, que se sustituye en la consulta.
+      OPEN C1;
+      FETCH C1 INTO vnom;
+      WHILE C1%FOUND LOOP
+         DBMS_OUTPUT.PUT_LINE(Vnom);
+         FETCH C1 INTO Vnom;
+      END LOOP;
+      CLOSE C1;
+   END;
+```
+
+#### Parámetros en cursores
+
+Otra característica ventajosa del uso de cursores está relacionada con el uso de las variables de acoplamiento. 
+
+```sql
+   CURSOR nombrecursor [(parámetros)] IS SELECT nombre, edad, puesto from empleados where ...
+```
+Los parámetros formales se indican después del nombre del cursor de la forma siguiente:
+
+```sql
+   nombreCursor [IN] tipodato [{:=|DEFAULT} valor]
+   -- Todos los parámetros son de entrada y con scope local al cursor, así solo se referencian en la consulta.
+```
+```sql
+   DECLARE
+      ...
+      CURSOR C1 (vdpto number, vsalario number DEFAULT 1500) IS SELECT nombre, edad FROM empleados WHERE departamento = vdpto AND salario > vsalario;
+
+-- Para abrir un cursor con parámetros lo haremos de la siguiente forma:
+
+   OPEN C1(1, 1300); -- empleados del departamento 1 y salario superior a 1300
+      ...
+```
+
+
+
+
+
+##### Sintaxis FOR...LOOP
+
+El proceso de uso de un cursor consiste en declararlo, declarar una variable que recibirá los datos del cursor, abrir el cursor, recuperar con fetch las filas extraídas introduciendo los datos en las variables, procesándolos y comprobando si se han recuperado datos o no.
+
+Para llevar a cabo dicha tarea, mediante la instrucción FOR...LOOP se llevan a cabo todas las tareas citadas excepto la declaración del cursor.
+
+```sql
+   DECLARE
+      CURSOR c2 IS SELECT nombre, edad, puesto FROM empleados WHERE salario>1500;
+   BEGIN
+      FOR vreg IN c2 LOOP
+         DBMS_OUTPUT.PUT_LINE (vreg.nombre || ' ' ||vreg.edad || ' ' || vreg.puesto);
+      END LOOP;
+   END;
+```
+
+Mediante esta sintaxis:
+* No hay que abrir ni cerrar el cursor.
+* La variable (vreg) se declara de forma implícita en el bucle (y solo está en el ámbito del bucle).
+* Cada iteración del bucle supone un fetch automático.
+* El bucle finaliza de forma automática cuando se acaban las filas.
+
+
+
+
+
+* [El baul del programador, cursores.](https://elbauldelprogramador.com/plsql-cursores/)
+  
+  
 
 ### APIS para lenguajes externos.
 
