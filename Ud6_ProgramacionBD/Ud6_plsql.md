@@ -360,10 +360,6 @@ Los parámetros formales se indican después del nombre del cursor de la forma s
       ...
 ```
 
-
-
-
-
 ##### Sintaxis FOR...LOOP
 
 El proceso de uso de un cursor consiste en declararlo, declarar una variable que recibirá los datos del cursor, abrir el cursor, recuperar con fetch las filas extraídas introduciendo los datos en las variables, procesándolos y comprobando si se han recuperado datos o no.
@@ -390,7 +386,7 @@ Mediante esta sintaxis:
 
 
 
-* [El baul del programador, cursores.](https://elbauldelprogramador.com/plsql-cursores/)
+
   
   
 
@@ -399,3 +395,4 @@ Mediante esta sintaxis:
 ### Recursos
 
 * [Mundo Oracle](http://www.mundoracle.com/pl-sql.html?Pg=sql_plsql_11.htm)
+* [El baul del programador, cursores.](https://elbauldelprogramador.com/plsql-cursores/)
