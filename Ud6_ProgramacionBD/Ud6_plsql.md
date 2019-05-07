@@ -37,7 +37,7 @@ Cada constante y variable tiene un tipo de dato en el que se especifica el forma
 
 * BOOLEAN (lógico): Se emplea para almacenar valores TRUE o FALSE.
 
-* DATE (fecha): Almacena datos de tipo fecha. Las fechas se almacenan internamente como datos numéricos, por lo que es posible realizar operaciones aritméticas con ellas.
+* DATE (fecha): Almacena datos de tipo fecha. Las fechas se almacenan internombrente como datos numéricos, por lo que es posible realizar operaciones aritméticas con ellas.
 
 Atributos de tipo. Un atributo de tipo PL/SQL es un modificador que puede ser usado para obtener información de un objeto de la base de datos. El atributo %TYPE permite conocer el tipo de una variable, constante o campo de la base de datos. El atributo %ROWTYPE permite obtener los tipos de todos los campos de una tabla de la base de datos, de una vista o de un cursor. Ejemplos a continuación.
 
@@ -61,10 +61,10 @@ Existen dos atributos de tipo: %TYPE y %ROWTYPE.
 
 ```sql
 DECLARE
- v_EmpName emp.ename%TYPE;
+ v_Empnombre emp.enombre%TYPE;
  BEGIN
- SELECT ename INTO v_EmpName FROM emp WHERE ROWNUM = 1;
- DBMS_OUTPUT.PUT_LINE('Name = '|| v_EmpName);
+ SELECT enombre INTO v_Empnombre FROM emp WHERE ROWNUM = 1;
+ DBMS_OUTPUT.PUT_LINE('nombre = '|| v_Empnombre);
  END;
  
 
@@ -72,7 +72,7 @@ DECLARE
  v_emp emp%ROWTYPE;
  BEGIN
  v_emp.empno :=10;
- v_emp.ename :='XXXXXXX';
+ v_emp.enombre :='XXXXXXX';
  END; 
 ```
 
@@ -240,10 +240,191 @@ END;
 
 ### Eventos y disparadores.
 
+Se denomina trigger (o gatillo, disparador) al código que se ejecuta automáticamente cuando se realiza una determinada acción sobre la base de datos. El código se ejecuta independientemente de la aplicación que realizó dicha operación.
+
+* Hay tres tipos triggers:
+  * De tabla: Se disparan cuando ocurre una acción DML (INSERT, UPDATE o DELETE) sobre una tabla.
+  * De vista: Se lanzan cuando ocurre una acción DML sobre una vista.
+  * De sistema: Se disparan cuando se produce un evento sobre la base de datos (conexión de un usuario, borrado de un objeto,...)
+
+```sql
+   CREATE {OR REPLACE} TRIGGER nombre_disp
+   [BEFORE|AFTER]
+   [DELETE|INSERT|UPDATE {OF columnas}] [ OR [DELETE|INSERT|UPDATE {OF columnas}]...]
+   ON tabla
+   [FOR EACH ROW [WHEN condicion disparo]]
+   [DECLARE]
+   -- Declaración de variables locales
+   BEGIN
+   -- Instrucciones de ejecución
+   [EXCEPTION]
+   -- Instrucciones de excepción
+   END;
+```
+
+
+#### Usos de los Triggers
+
+* Ejecutar acciones relacionadas con la que dispara el trigger
+* Centralizar operaciones globales
+* Realizar tareas administrativas de forma automática
+* Evitar errores
+* Crear reglas de integridad complejas
+
+El código que se lanza con el trigger es PL/SQL. No es conveniente realizar excesivos triggers (ni inventar la rueda), sólo los necesarios, de otro modo se ralentiza en exceso la base de datos.
+
+#### Elementos que componen el trigger
+
+* El evento que da lugar a la ejecución del trigger (INSERT, UPDATE o DELETE)
+* El momento en que se lanza en relación a dicho evento (BEFORE (antes), AFTER (después) o INSTEAD OF (en lugar de))
+* El tipo dependiendo de las veces que el trigger se ejecuta (de instrucción o de fila)
+* El cuerpo del trigger, es decir el código que ejecuta dicho trigger
+
+#### Momentos de disparo
+
+* Los posibles tiempos para que el trigger se ejecute pueden ser:
+  * BEFORE: El código del trigger se ejecuta antes de ejecutar la instrucción DML que causó el lanzamiento del trigger.
+  * AFTER: El código del trigger se ejecuta después de haber ejecutado la instrucción DML que causó el lanzamiento del trigger.
+  * INSTEAD OF: El trigger sustituye a la operación DML Se utiliza para vistas que no admiten instrucciones DML.
+
+* Los eventos que desencadenan el disparo son las operaciones del DML ya vistas: INSERT, UPDATE, DELETE o la combinación de ellas.
+
+
+#### Tipos de Triggers
+
+* De instrucción (o sentencia):
+  * El cuerpo del trigger se ejecuta una sola vez por cada evento que lance el trigger. Esta es la opción por defecto. El código se ejecuta aunque la instrucción DML no genere resultados.
+
+* De fila:
+  * El código se ejecuta una vez por cada fila afectada por el evento.
+  
+Una diferencia entre ellos, por ejemplo; Supóngase que se da una sentencia UPDATE que desencadena un trigger y dicho UPDATE actualiza 10 filas; si el trigger es de fila se ejecuta una vez por cada fila, si es de instrucción se ejecuta sólo una vez.
+
 ### Excepciones. Tratamiento de excepciones.
 
-### Cursores. Funciones de tratamiento de cursores.
+En PL/SQL, una excepción es un fenómeno que surge durante la ejecución del código. Se reconoce por su identificador asociado, que nos informa de su origen.
 
+En el momento que se produce la excepción, pueden darse dos casos, que se haya desarrollado el código para gestionarla o que no. Si no se ha desarrollado y por tanto no se *captura* la excepción, el sistema mostrará un error al usuario. Por el contrario, si se ha gestionado el tratamiento de la excepción, se puede continuar con la ejecución y resolver la excepción ya sea en el bloque de código que la originó o en el bloque padre de éste.
+
+El origen de las [excepciones](http://www.mundoracle.com/excepciones.html?Pg=sql_plsql_14.htm) puede ser el propio Oracle o tener un origen externo, hablaremos de excepciones implícitas o explícitas, respectivamente.
+
+#### Excepciones implícitas.
+
+Son aquellas que desencadena el propio sistema. Para controlarlas es conveniente desarrollar el bloque _EXCEPTION_ en el código. Por ejemplo, si se manipula el resultado de una consulta cabe prever la gestión del caso de no recuperar filas en la consulta, o qué hacer cuando ya se hayan tratado las filas devueltas, o para el caso de que la consulta devuelva demasiadas filas. Para estos casos, Oracle genera la excepción __NO_DATA_FOUND__ o __TOO_MANY_ROWS__ por ejemplo. 
+
+```sql
+EXCEPTION
+   WHEN NO_DATA_FOUND THEN
+      --sentencias que gestionen la ausencia de datos. Mensaje al usuario, etc.
+      DBMS_OUTPUT.PUT_LINE('La consulta no ha devuelto datos');
+   WHEN TOO_MANY_ROWS THEN
+      --sentencias que gestionen que la consulta ha devuelto más de una fila. Mensaje al usuario, etc.
+      DBMS_OUTPUT.PUT_LINE('La consulta devuelve más de una fila');
+   WHEN OTHERS THEN
+      -- Sentencias para otras excepciones que puedan producirse, distintas de las anteriores. 
+   END;
+```
+
+Capturar la excepción supone que no se pierda el control del flujo del código. Las excepciones tienen asociado un código y un mensaje descriptivo. [Doc Oficial Excepciones EN](https://docs.oracle.com/cd/A97630_01/appdev.920/a96624/07_errs.htm).
+
+* Listado de las excepciones recogidas en el manual de Oracle:
+  * ACCESS_INTO_NULL
+  * CASE_NOT_FOUND
+  * COLLECTION_IS_NULL
+  * CURSOR_ALREADY_OPEN
+  * DUP_VAL_ON_INDEX
+  * INVALID_CURSOR
+  * INVALID_NUMBER
+  * LOGIN_DENIED
+  * NO_DATA_FOUND
+  * NOT_LOGGED_ON
+  * PROGRAM_ERROR
+  * ROWTYPE_MISMATCH
+  * SELF_IS_NULL
+  * STORAGE_ERROR
+  * SUBSCRIPT_BEYOND_COUNT
+  * SUBSCRIPT_OUTSIDE_LIMIT
+  * SYS_INVALID_ROWID
+  * TIMEOUT_ON_RESOURCE
+  * TOO_MANY_ROWS
+  * VALUE_ERROR
+  * ZERO_DIVIDE
+  
+
+Si la excepción se captura en __OTHERS__ es posible tener información de su origen mediante las funciones __SQLERR__ y __SQLCODE__, que recogen el mensaje de error y código asociados respectivamente.
+
+
+```sql
+DECLARE 
+   c_id clientes.id%type := 8; 
+   c_nombre clientes.nombre%type; 
+   c_direccion clientes.direccion%type; 
+BEGIN 
+   SELECT  nombre, direccion INTO  c_nombre, c_direccion 
+   FROM clientes 
+   WHERE id = c_id;  
+   DBMS_OUTPUT.PUT_LINE ('Nombre: '||  c_nombre); 
+   DBMS_OUTPUT.PUT_LINE ('Dirección: ' || c_direccion); 
+
+EXCEPTION 
+   WHEN no_data_found THEN 
+      dbms_output.put_line('No se han encontrado clientes!'); 
+   WHEN others THEN 
+      dbms_output.put_line('Error!'); 
+END; 
+/
+```
+
+#### Excepciones generadas por el desarrollador.
+
+En ocasiones puede interesar manejar algunas situaciones como se hace con las excepciones. Para ello, es posible declarar excepciones propias para gestionarlas.
+
+```sql
+   DECLARE
+      nombre_excepcion EXCEPTION
+   BEGIN
+      ...
+      RAISE nombre_excepcion -- La palabra RAISE desencadena el lanzamiento de la excepción.
+      ...
+
+      EXCEPTION
+         WHEN nombre_excepcion THEN
+            ... -- Instrucciones para manejar la excepción
+   END;
+```
+
+```sql
+DECLARE 
+   c_id clientes.id%type := &cc_id; 
+   c_nombre clientes.nombre%type; 
+   c_direccion clientes.direccion%type;  
+   -- Excepción definida por el usuario 
+   ex_id_incorrecto  EXCEPTION; 
+BEGIN 
+   IF c_id <= 0 THEN 
+      RAISE ex_id_incorrecto; 
+   ELSE 
+      SELECT  nombre, direccion INTO  c_nombre, c_direccion 
+      FROM clientes 
+      WHERE id = c_id;
+      DBMS_OUTPUT.PUT_LINE ('nombre: '||  c_nombre);  
+      DBMS_OUTPUT.PUT_LINE ('direccion: ' || c_direccion); 
+   END IF; 
+
+EXCEPTION 
+   WHEN ex_id_incorrecto THEN 
+      dbms_output.put_line('El ID debe ser mayor que 0!'); 
+   WHEN no_data_found THEN 
+      dbms_output.put_line('No se han encontrado clientes!'); 
+   WHEN others THEN 
+      dbms_output.put_line('Error no identificado!');  
+END; 
+/
+```
+
+
+
+### Cursores. Funciones de tratamiento de cursores.
 
 #### Cursores implícitos.
 
