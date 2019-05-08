@@ -326,7 +326,7 @@ Se puede establecer que se dispare el trigger cuando se vea afectada una tabla o
 
 * Cuando se ejecutan actualizaciones (UPDATE) a nivel de fila, hay que tener en cuenta que se modifican valores antiguos (OLD) para cambiarles por valores nuevos (NEW). Las palabras NEW y OLD permiten acceder a los valores nuevos y antiguos respectivamente. Normalmente lo haremos como ```:old.nombrecolumna``` y ```:new.nombrecolumna``` respectivamente. Tanto OLD como NEW son elementos %ROWTYPE, del mismo tipo que la tabla.
 
-* Al utilizar los valores old y new deberemos tener en cuenta el evento de disparo:
+* Al utilizar los valores old y new deberemos tener en cuenta el evento de disparo:
    * Cuando el evento que dispara el trigger es DELETE, deberemos hacer referencia a :old.nombrecolumna, ya que el valor de new es NULL.
    * Paralelamente, cuando el evento de disparo es INSERT, deberemos referirnos siempre a :new.nombrecolumna, puesto que el valor de old no existe ( es NULL).
    * Para los triggers cuyo evento de disparo es UPDATE, tienen sentido los dos valores.
