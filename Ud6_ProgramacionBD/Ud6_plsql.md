@@ -657,15 +657,6 @@ Mediante esta sintaxis:
 * El bucle finaliza de forma automática cuando se acaban las filas.
 
 
-
-
-
-
-  
-  
-
-### APIS para lenguajes externos.
-
 ### Recursos
 
 * [Mundo Oracle](http://www.mundoracle.com/pl-sql.html?Pg=sql_plsql_11.htm)
