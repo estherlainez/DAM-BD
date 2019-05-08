@@ -248,8 +248,8 @@ Se denomina trigger (o gatillo, disparador) al código que se ejecuta automát
   * De sistema: Se disparan cuando se produce un evento sobre la base de datos (conexión de un usuario, borrado de un objeto,...)
 
 ```sql
-   CREATE {OR REPLACE} TRIGGER nombre_disp
-   [BEFORE|AFTER]
+   CREATE {OR REPLACE} TRIGGER nombre_disparador
+   [BEFORE|AFTER|INSTEAD OF]
    [DELETE|INSERT|UPDATE {OF columnas}] [ OR [DELETE|INSERT|UPDATE {OF columnas}]...]
    ON tabla
    [FOR EACH ROW [WHEN condicion disparo]]
@@ -285,7 +285,7 @@ El código que se lanza con el trigger es PL/SQL. No es conveniente realizar ex
 * Los posibles tiempos para que el trigger se ejecute pueden ser:
   * BEFORE: El código del trigger se ejecuta antes de ejecutar la instrucción DML que causó el lanzamiento del trigger.
   * AFTER: El código del trigger se ejecuta después de haber ejecutado la instrucción DML que causó el lanzamiento del trigger.
-  * INSTEAD OF: El trigger sustituye a la operación DML Se utiliza para vistas que no admiten instrucciones DML.
+  * INSTEAD OF: El trigger sustituye a la operación DML. Se utiliza para vistas que no admiten instrucciones DML.
 
 * Los eventos que desencadenan el disparo son las operaciones del DML ya vistas: INSERT, UPDATE, DELETE o la combinación de ellas.
 
@@ -294,11 +294,104 @@ El código que se lanza con el trigger es PL/SQL. No es conveniente realizar ex
 
 * De instrucción (o sentencia):
   * El cuerpo del trigger se ejecuta una sola vez por cada evento que lance el trigger. Esta es la opción por defecto. El código se ejecuta aunque la instrucción DML no genere resultados.
-
-* De fila:
+  
+* De fila:
   * El código se ejecuta una vez por cada fila afectada por el evento.
+  * ```FOR EACH ROW``` es la que hace que el trigger sea de fila, es decir que se repita su ejecución por cada fila afectada en la tabla por la instrucción DML.
+  * La claúsula ```WHEN``` permite colocar una condición que deben de cumplir los registros para que el trigger se ejecute. Sólo se ejecuta el trigger para las filas que cumplan dicha condición. 
+  
+  ```sql
+   CREATE [OR REPLACE] TRIGGER nombre_Trigger
+      {BEFORE|AFTER}
+      {DELETE|INSERT|UPDATE [OF columna1, columna2, ..., columnaN]
+         [OR {DELETE|INSERT|UPDATE [OF columna1, columna2, ..., columnaN]...]}
+      ON tabla
+         [REFERENCING OLD AS old | NEW AS new] FOR EACH ROW
+         [WHEN condition]
+         [DECLARE declaraciones ]
+      BEGIN
+      cuerpo
+      [EXCEPTION captura de excepciones ] 
+      END;
+  ```
+  
   
 Una diferencia entre ellos, por ejemplo; Supóngase que se da una sentencia UPDATE que desencadena un trigger y dicho UPDATE actualiza 10 filas; si el trigger es de fila se ejecuta una vez por cada fila, si es de instrucción se ejecuta sólo una vez.
+
+Se puede establecer que se dispare el trigger cuando se vea afectada una tabla o varias, o incluso cuando se modifique alguna columna concreta. Es posible anidar condiciones de disparo.
+
+
+
+#### OLD y NEW
+
+* Cuando se ejecutan actualizaciones (UPDATE) a nivel de fila, hay que tener en cuenta que se modifican valores antiguos (OLD) para cambiarles por valores nuevos (NEW). Las palabras NEW y OLD permiten acceder a los valores nuevos y antiguos respectivamente. Normalmente lo haremos como ```:old.nombrecolumna``` y ```:new.nombrecolumna``` respectivamente. Tanto OLD como NEW son elementos %ROWTYPE, del mismo tipo que la tabla.
+
+* Al utilizar los valores old y new deberemos tener en cuenta el evento de disparo:
+   * Cuando el evento que dispara el trigger es DELETE, deberemos hacer referencia a :old.nombrecolumna, ya que el valor de new es NULL.
+   * Paralelamente, cuando el evento de disparo es INSERT, deberemos referirnos siempre a :new.nombrecolumna, puesto que el valor de old no existe ( es NULL).
+   * Para los triggers cuyo evento de disparo es UPDATE, tienen sentido los dos valores.
+
+* En el caso de que queramos hacer referencia a los valores new y old, al indicar la restricción del trigger (en la cláusula WHEN) lo haremos sin poner los dos puntos. Así NEW.nombrecolumna haría referencia al nuevo valor que se asigna y OLD.nombrecolumna al viejo.
+
+
+#### Ejemplos Triggers
+
+* Trigger que impide que se puedan añadir registros a la tabla de empleados si no se hace entre las 10 y las 13 horas.
+
+```sql
+CREATE OR REPLACE TRIGGER insertar_empleados BEFORE
+   INSERT ON empleados BEGIN
+      IF(TO_CHAR(SYSDATE,'HH24') NOT IN ('10','11','12')) THEN
+         RAISE_APPLICATION_ERROR(-20001, 'Sólo se puede añadir personal entre las 10 y las 12:59');
+      END IF; 
+END;
+
+
+-- Uso del Trigger, si se hace fuera de la hora señalada, debería dispararse el trigger
+INSERT
+INTO empleados
+values (1525, 'Juan', 'Sánchez', default, 50500, 'juan_sanchez@dominio.com', 'RUE-ES', default, 'Comercial');
+```
+
+* Vemos un ejemplo de Triggers que utilizan OLD y NEW. Creamos una tabla que guarde los cambios de los precios de los productos y dos triggers que rellenarán las variaciones de precios que se produzcan.
+
+```sql
+CREATE TABLE control_precios_productos (
+   precio_antiguo NUMBER(15,2), 
+   precio_nuevo NUMBER(15,2), 
+   codigoproducto VARCHAR2(15), 
+   fecha DATE);
+
+-- Controla cualquier cambio de precio
+CREATE OR REPLACE TRIGGER controlador_precios
+   BEFORE UPDATE OF precioventa
+      ON productos
+   FOR EACH ROW BEGIN
+      INSERT INTO control_precios_productos VALUES
+      (:OLD.precioventa, :NEW.precioventa, :OLD.codigoproducto, SYSDATE );
+END;
+
+-- Controla solo las rebajas de los precios actuales
+CREATE OR REPLACE TRIGGER crear_bajadas_precios BEFORE
+   UPDATE OF precioventa
+      ON productos
+   FOR EACH ROW
+      WHEN (OLD.precioventa>NEW.precioventa) BEGIN
+   INSERT INTO control_precios_productos VALUES (:OLD.precioventa, :NEW.precioventa, :OLD.codigoproducto, SYSDATE );
+END;
+```
+#### Administración de los Triggers.
+
+Al igual que sucede con otros elementos de la base de datos como las tablas, vistas, funciones... los triggers también son manipulables mediante sentencias DDL.
+
+* Activación:
+   * ALTER TRIGGER nombreTrigger ENABLE;
+* Activación o desactivación de todos los triggers de una tabla:
+   * ALTER TABLE nombreTabla {DISABLE | ENABLE} ALL TRIGGERS;
+* Desactivación:
+   * ALTER TRIGGER nombreTrigger DISABLE;
+* Eliminación:
+   * DROP TRIGGER nombreTrigger;
 
 ### Excepciones. Tratamiento de excepciones.
 
