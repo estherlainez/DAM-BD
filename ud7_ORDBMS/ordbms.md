@@ -21,19 +21,20 @@ Se dice del atributo tal que para una misma entidad puede tomar varios valores d
 Oracle proporciona mecanismos para que el usuario pueda definir sus propios tipos de datos, cuya estructura puede ser compleja, y que se pueden aplicar para asignar un tipo a una columna de una tabla. También reconoce el concepto de objetos, de tal manera que un objeto tiene un tipo, se almacena en cierta fila de cierta tabla y tiene un identificador único (OID). Estos identificadores se pueden utilizar para referenciar a otros objetos y así representar relaciones de asociación y de agregación. Oracle también proporciona mecanismos para asociar métodos a tipos, y constructores para diseñar tipos de datos multivaluados (colecciones) y tablas anidadas. La mayor deficiencia de este sistema es la imposibilidad de definir jerarquías de especialización y herencia, lo cual es una importante desventaja con respecto a las bases de datos orientadas a objetos.
 
 #### Tipos de datos colección
-* VARRAY 
-  * Un varray se manipula de forma muy similar a las tablas indexadas o anidadas pero se implementa de forma diferente. Los elementos en el varray se almacenan comenzando en el índice 1 hasta la longitud máxima declarada en el tipo varray. (Ver documento sobre colecciones)
-  
-* Tablas anidadas. (Ver documento sobre tablas anidadas)
-  * Un tipo colección es aquel que maneja varias variables como una unidad. La versión 2 de PL/SQL sólo tenía un tipo de dato colección, las tablas PL/SQL vistas anteriormente. 
-  * La versión 8 de Oracle PL/SQL añadió dos tipos colección nuevos las tablas anidadas y los varrays. Cada uno de estos tipos de colecciones puede interpretarse como un tipo de objeto con atributos y métodos. 
-  * Las tablas anidadas añaden funcionalidad a las indexadas al añadir métodos de colección adicionales y la capacidad de almacenar tablas anidadas en una tabla de la base de datos. Estas tablas también pueden manejarse directamente utilizando órdenes SQL.
-  
 
-* Tipos de objeto.
-  * La estructura de la definición o declaración de un tipo de objeto está dividida en una especificación y un cuerpo. La especificación define el interfaz de programación, donde se declaran los atributos así como las operaciones (métodos) para manipular los datos. En el cuerpo se implementa el código fuente de los métodos.
-  * Toda la información que un programa necesita para usar los métodos lo encuentra en la especificación. Se puede modificar el cuerpo sin cambiar la especificación, sin que ello afecte a los programas cliente.
-  * En la especificación de un tipo de objeto, todos los atributos debes declararlos antes que los métodos. Si la especificación de un tipo de objeto sólo declara atributos, no es necesario que declares el cuerpo. Debes tener en cuenta también que no puedes declarar atributos en el cuerpo. Además, todas las declaraciones realizadas en la especificación del tipo de objeto son públicas, es decir, visibles fuera del tipo de objeto.
+* La versión 8 de Oracle PL/SQL añadió dos tipos colección nuevos las tablas anidadas y los varrays. Cada uno de estos tipos de colecciones puede interpretarse como un tipo de objeto con atributos y métodos. Un tipo colección es aquel que maneja varias variables como una unidad. La versión 2 de PL/SQL sólo tenía un tipo de dato colección, las tablas PL/SQL vistas anteriormente. 
+
+  * VARRAY 
+    * Un varray se manipula de forma muy similar a las tablas indexadas o anidadas pero se implementa de forma diferente. Los elementos en el varray se almacenan comenzando en el índice 1 hasta la longitud máxima declarada en el tipo varray. (Ver documento sobre colecciones)
+    
+  * Tablas anidadas. (Ver documento sobre tablas anidadas)
+    * Las tablas anidadas añaden funcionalidad a las indexadas al añadir métodos de colección adicionales y la capacidad de almacenar tablas anidadas en una tabla de la base de datos. Estas tablas también pueden manejarse directamente utilizando órdenes SQL.
+    
+
+  * Tipos de objeto.
+    * La estructura de la definición o declaración de un tipo de objeto está dividida en una especificación y un cuerpo. La especificación define el interfaz de programación, donde se declaran los atributos así como las operaciones (métodos) para manipular los datos. En el cuerpo se implementa el código fuente de los métodos.
+    * Toda la información que un programa necesita para usar los métodos lo encuentra en la especificación. Se puede modificar el cuerpo sin cambiar la especificación, sin que ello afecte a los programas cliente.
+    * En la especificación de un tipo de objeto, todos los atributos debes declararlos antes que los métodos. Si la especificación de un tipo de objeto sólo declara atributos, no es necesario que declares el cuerpo. Debes tener en cuenta también que no puedes declarar atributos en el cuerpo. Además, todas las declaraciones realizadas en la especificación del tipo de objeto son públicas, es decir, visibles fuera del tipo de objeto.
 
 
 
@@ -108,3 +109,7 @@ END;
 ### Gestión de referencias.
 
 Ver documento sobre referencias
+
+
+### Recursos
+* [Objetos PL/SQL PDF ES](http://www.v-espino.com/~chema/daw1/tutoriales/oracle/OracleObjetos.pdf)
