@@ -33,14 +33,35 @@ Oracle proporciona mecanismos para que el usuario pueda definir sus propios tipo
 
   * Tipos de objeto.
     * La estructura de la definición o declaración de un tipo de objeto está dividida en una especificación y un cuerpo. La especificación define el interfaz de programación, donde se declaran los atributos así como las operaciones (métodos) para manipular los datos. En el cuerpo se implementa el código fuente de los métodos.
-    * Toda la información que un programa necesita para usar los métodos lo encuentra en la especificación. Se puede modificar el cuerpo sin cambiar la especificación, sin que ello afecte a los programas cliente.
-    * En la especificación de un tipo de objeto, todos los atributos debes declararlos antes que los métodos. Si la especificación de un tipo de objeto sólo declara atributos, no es necesario que declares el cuerpo. Debes tener en cuenta también que no puedes declarar atributos en el cuerpo. Además, todas las declaraciones realizadas en la especificación del tipo de objeto son públicas, es decir, visibles fuera del tipo de objeto.
 
+```sql
+   CREATE OR REPLACE TYPE DIRECCION AS OBJECT(
+      calle  VARCHAR2(25),
+      ciudad VARCHAR2(20),
+      codigo_post NUMBER(5),
+      
+      MEMBER PROCEDURE SET_CALLE(C VARCHAR2),
+      MEMBER FUNCTION GET_CALLE RETURN VARCHAR2);
+   /
+
+
+   CREATE OR REPLACE TYPE PERSONA AS OBJECT(
+         apellidos VARCHAR2(50),
+         codigo NUMBER,
+         fecha_nac DATE,
+         nombre VARCHAR2(35),
+         direc DIRECCION);
+   /
+```
+  
+  * Toda la información que un programa necesita para usar los métodos lo encuentra en la especificación. Se puede modificar el cuerpo sin cambiar la especificación, sin que ello afecte a los programas cliente.
+  
+  * En la especificación de un tipo de objeto, todos los atributos de deben declarar __antes__ que los métodos. Si la especificación de un tipo de objeto sólo declara atributos, no es necesario declarar el cuerpo. Hay que tener en cuenta también que no se puede declarar atributos en el cuerpo. Además, todas las declaraciones realizadas en la especificación del tipo de objeto son públicas, es decir, visibles fuera del tipo de objeto.
 
 
 ### Identificadores de objeto (OID)
 
-* Cada fila de una tabla tipada (OR) tendrá un identificador del objeto fila. Para guardar esos identificadores Oracle utiliza una *referencia*.
+* Cada fila de una tabla tipada tendrá un identificador del objeto fila. Para guardar esos identificadores Oracle utiliza una *referencia*.
 
 ```sql
 -- REF(e) devuelve el identificador OID de la fila.
